@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tri Ân Ngày 20/10 - Phân hiệu Đào tạo Thanh Hóa - Trường CĐN Số 4 / QK4</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #9e1b32; /* Đỏ nhung hoàng gia */
+            --primary-light: #c42b47;
+            --gold: #d4af37; /* Vàng kim */
+            --gold-light: #f3e5ab;
+            --military-green: #2b4c3f; /* Xanh quân ngũ thanh lịch */
+            --dark: #1a0f13;
+            --light-bg: #fffbf7;
+            --shadow: 0 15px 35px rgba(158, 27, 50, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Container & Layout */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Music Floating Control */
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--gold);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        .music-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary);
+        }
+
+        .music-btn.playing {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Header / Banner */
+        header {
+            padding: 60px 0 30px;
+            text-align: center;
+        }
+
+        .unit-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--military-green), #1b332a);
+            color: var(--gold-light);
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(43, 76, 63, 0.3);
+            margin-bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            color: var(--primary);
+            margin-bottom: 15px;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .sub-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .target-text {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 750px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .divider {
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 25px auto;
+        }
+
+        /* 3D Envelope Section */
+        .envelope-wrapper {
+            margin: 50px auto 80px;
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .envelope-container {
+            width: 100%;
+            max-width: 650px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .envelope {
+            width: 100%;
+            height: 380px;
+            background: #e0d0c0;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: var(--shadow);
+            transition: transform 0.6s ease;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 190px;
+            background: #d4c0b0;
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+            transform-origin: top;
+            transition: transform 0.6s 0.4s ease, z-index 0.2s 0.4s;
+            z-index: 5;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 240px;
+            background: #ebdcd0;
+            clip-path: polygon(0 100%, 0 0, 50% 50%, 100% 0, 100% 100%);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            z-index: 4;
+        }
+
+        .envelope-seal {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-light);
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* Letter Inside */
+        .letter {
+            position: absolute;
+            bottom: 15px;
+            left: 5%;
+            width: 90%;
+            background: #fff;
+            padding: 40px 35px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            z-index: 3;
+            transition: transform 0.8s 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+            border: 1px solid #f0e6df;
+        }
+
+        .letter-content {
+            opacity: 0;
+            transition: opacity 0.5s 1.2s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .letter h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .letter p {
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-align: justify;
+        }
+
+        .letter-signature {
+            text-align: right;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: var(--military-green);
+            margin-top: 25px;
+            font-weight: bold;
+        }
+
+        /* Open State */
+        .envelope-container.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope-container.open .envelope-seal {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+        }
+
+        .envelope-container.open .letter {
+            transform: translateY(-160px);
+            z-index: 10;
+        }
+
+        .envelope-container.open .letter-content {
+            opacity: 1;
+            max-height: 2000px;
+        }
+
+        .click-hint {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-top: 15px;
+            font-weight: 600;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #777;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin-top: 40px;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header { padding: 40px 0 20px; }
+            .envelope { height: 320px; }
+            .envelope-flap { height: 160px; }
+            .envelope-pocket { height: 200px; }
+            .envelope-seal { top: 120px; width: 50px; height: 50px; font-size: 1.1rem; }
+            .letter { padding: 25px 20px; }
+            .envelope-container.open .letter { transform: translateY(-120px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Hiệu ứng Cánh Hoa -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Nút Bật/Tắt Nhạc -->
+    <button class="music-btn" id="musicBtn" title="Bật/Tắt Nhạc Nền">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+    </button>
+
+    <div class="container">
+        <!-- Banner Header -->
+        <header>
+            <div class="unit-badge">Phân hiệu Đào tạo Thanh Hóa — Trường CĐN Số 4 / QK4</div>
+            <h1 class="main-title">CHÚC MỪNG NGÀY PHỤ NỮ VIỆT NAM 20/10</h1>
+            <div class="sub-title">Tôn Vinh Phái Đẹp — Tận Tụy & Rạng Rỡ</div>
+            <div class="divider"></div>
+            <p class="target-text">
+                Kính gửi các Cô giáo, Cán bộ và Nhân viên nữ — Những người đã và đang cống hiến hết mình cho sự nghiệp giáo dục, đào tạo nghề và rèn luyện tại Phân hiệu Đào tạo Thanh Hóa.
+            </p>
+        </header>
+
+        <!-- Bức Thư Tri Ân 3D -->
+        <section class="envelope-wrapper">
+            <div class="envelope-container" id="envelope">
+                <div class="envelope">
+                    <div class="envelope-flap"></div>
+                    <div class="envelope-seal">🌹</div>
+                    <div class="envelope-pocket"></div>
+                    
+                    <div class="letter">
+                        <div class="letter-content">
+                            <h3>Thư Tri Ân Ngày 20/10</h3>
+                            <p><strong>Kính gửi các Cô giáo, Cán bộ và Nhân viên nữ Phân hiệu Đào tạo Thanh Hóa,</strong></p>
+                            <p>
+                                Nhân ngày Phụ nữ Việt Nam 20/10, đại diện cho toàn thể nam cán bộ, giảng viên và các thế hệ học viên, sinh viên, xin gửi tới các Cô, các chị em lời chúc mừng chân thành và sâu sắc nhất!
+                            </p>
+                            <p>
+                                Trong môi trường giáo dục và rèn luyện mang kỷ luật quân đội, sự hiện diện của các Cô và chị em chính là làn gió dịu dàng, tiếp thêm năng lượng tích cực, sự ấm áp và tính chỉn chu cho từng tiết học, từng trang giáo án và công tác quản lý.
+                            </p>
+                            <p>
+                                Cảm ơn những cống hiến thầm lặng, tinh thần trách nhiệm và lòng yêu nghề của quý Cô, quý Cán bộ nhân viên. Chúc phái đẹp của Phân hiệu Đào tạo Thanh Hóa luôn tràn ngập sức khỏe, hạnh phúc, giữ vững tâm huyết và luôn rạng rỡ như những đóa hoa tươi thắm nhất!
+                            </p>
+                            <div class="letter-signature">
+                                Tập thể Nam Cán bộ & Học viên trân trọng
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="click-hint" id="clickHint">✨ Chạm vào phong thư để mở lời tri ân ✨</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p><strong>PHÂN HIỆU ĐÀO TẠO THANH HÓA — TRƯỜNG CAO ĐẲNG NGHỀ SỐ 4 / QUÂN KHU 4</strong></p>
+            <p>Kính chúc các Cô giáo, Cán bộ và Nhân viên nữ ngày 20/10 trọn vẹn niềm vui & hạnh phúc!</p>
+        </footer>
+    </div>
+
+    <!-- Script Hiệu Ứng & Nhạc -->
+    <script>
+        /* 1. HIỆU ỨNG CÁNH HOA RƠI (CANVAS) */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Petal {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = -20;
+                this.size = Math.random() * 12 + 8;
+                this.speedY = Math.random() * 1.5 + 0.8;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.03;
+                this.color = `hsl(${Math.random() * 15 + 345}, 85%, ${Math.random() * 20 + 60}%)`;
+                this.opacity = Math.random() * 0.5 + 0.5;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += Math.sin(this.angle) * 0.8 + this.speedX;
+                this.angle += this.spin;
+
+                if (this.y > height + 20) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-this.size / 2, -this.size / 2, -this.size, this.size / 3, 0, this.size);
+                ctx.bezierCurveTo(this.size, this.size / 3, this.size / 2, -this.size / 2, 0, 0);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        const petals = Array.from({ length: 35 }, () => new Petal());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            petals.forEach(petal => {
+                petal.update();
+                petal.draw();
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+
+        animateCanvas();
+
+        /* 2. LOGIC MỞ THƯ 3D */
+        const envelope = document.getElementById('envelope');
+        const clickHint = document.getElementById('clickHint');
+
+        envelope.addEventListener('click', () => {
+            envelope.classList.toggle('open');
+            if (envelope.classList.contains('open')) {
+                clickHint.innerText = "✨ Chạm lần nữa để gấp thư ✨";
+            } else {
+                clickHint.innerText = "✨ Chạm vào phong thư để mở lời tri ân ✨";
+            }
+        });
+
+        /* 3. ĐỒNG HỒ PHÁT NHẠC DU DƯƠNG (WEB AUDIO API) */
+        let audioCtx = null;
+        let isPlaying = false;
+        let timer = null;
+
+        const musicBtn = document.getElementById('musicBtn');
+
+        const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Đô Re Mi Fa Sol La Si Đô
+
+        function playTone() {
+            if (!isPlaying) return;
+            
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            const freq = notes[Math.floor(Math.random() * notes.length)];
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.8);
+
+            const nextTime = Math.random() * 400 + 300;
+            timer = setTimeout(playTone, nextTime);
+        }
+
+        musicBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                musicBtn.classList.add('playing');
+                playTone();
+            } else {
+                musicBtn.classList.remove('playing');
+                if (timer) clearTimeout(timer);
+            }
+        });
+    </script>
+</body>
+</html>
